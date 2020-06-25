@@ -12,23 +12,23 @@ instance Monad m => Functor (StateT s m) where
   fmap f m = StateT $ \ s -> do (v, s') <- runStateT m s
                                 return (f v, s')
 
-instance Monad m => Applicative (StateT s m) where
-  pure x = StateT $ \ s -> return (x, s)
+-- instance Monad m => Applicative (StateT s m) where
+--   pure x = StateT $ \ s -> return (x, s)
 
 instance Monad m => Monad (StateT s m) where
-  return = pure
-  m >>= fm = StateT $ \ s -> do (v ,s') <- runStateT m s
+  return a = StateT $ \ s -> return (a, s) -- pure
+  m >>= fm = StateT $ \ s -> do (v, s') <- runStateT m s
                                 runStateT (fm v) s'
 
-instance MonadFail m => MonadFail (StateT s m) where
-  fail msg = StateT $ \ _ -> fail msg
+-- instance MonadFail m => MonadFail (StateT s m) where
+--   fail msg = StateT $ \ _ -> fail msg
 
 instance  MonadTrans (StateT s) where
   lift m = StateT $ \ s -> do v <- m
                               return (v, s)
 
 instance MonadIO m => MonadIO (StateT s m) where
-  liftIO = lift . liftIO
+  liftIO = lift . Control.Monad.IO.Class.liftIO
 
 get :: Monad m => StateT s m s
 get = StateT $ \s -> return (s, s)
@@ -45,10 +45,10 @@ modify f = StateT $ \s -> return ((), f s)
 gets :: Monad m => (s -> a) -> StateT s m a
 gets f = StateT $ \ s -> return (f s, s)
 
-evalStateT :: Monad m => StateT s m a -> s -> m a
+evalStateT :: Functor m => StateT s m a -> s -> m a
 evalStateT m = fmap fst . runStateT m
 
-execStateT :: Monad m => StateT s m a -> s -> m s
+execStateT :: Functor m => StateT s m a -> s -> m s
 execStateT m = fmap snd . runStateT m
 
 mapStateT :: (Monad m, Monad n)

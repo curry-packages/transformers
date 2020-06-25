@@ -7,38 +7,42 @@ newtype MaybeT m a = MaybeT {
     runMaybeT :: m (Maybe a)
   }
 
-instance Monad m => Functor (MaybeT m) where
+instance Functor Maybe where
+  fmap _ Nothing  = Nothing
+  fmap f (Just x) = Just (f x)
+
+instance Functor m => Functor (MaybeT m) where
   fmap f m = MaybeT (fmap (fmap f) (runMaybeT m))
 
-instance Monad m => Applicative (MaybeT m) where
-  pure x = MaybeT (return (Just x))
+-- instance Monad m => Applicative (MaybeT m) where
+--   pure x = MaybeT (return (Just x))
+-- 
+--   mf <*> m = MaybeT $ do f <- runMaybeT mf
+--                          v <- runMaybeT m
+--                          return (f <*> v)
 
-  mf <*> m = MaybeT $ do f <- runMaybeT mf
-                         v <- runMaybeT m
-                         return (f <*> v)
-
-instance Monad m => Alternative (MaybeT m) where
-  empty = MaybeT (return Nothing)
-
-  x <|> y = MaybeT $ do v <- runMaybeT x
-                        case v of
-                          Nothing -> runMaybeT y
-                          Just _  -> return v
+-- instance Monad m => Alternative (MaybeT m) where
+--   empty = MaybeT (return Nothing)
+-- 
+--   x <|> y = MaybeT $ do v <- runMaybeT x
+--                         case v of
+--                           Nothing -> runMaybeT y
+--                           Just _  -> return v
 
 instance Monad m => Monad (MaybeT m) where
-  return = pure
+  return x = MaybeT (return (Just x)) -- pure
 
   m >>= f = MaybeT $ do v <- runMaybeT m
                         maybe (return Nothing) (runMaybeT . f) v
 
-instance MonadFail m => MonadFail (MaybeT m) where
-  fail _ = MaybeT (return Nothing)
+-- instance MonadFail m => MonadFail (MaybeT m) where
+--   fail _ = MaybeT (return Nothing)
 
-instance MonadTrans MaybeT where
-  lift m = MaybeT (fmap Just m)
+-- instance MonadTrans MaybeT where
+--   lift m = MaybeT (fmap Just m)
 
-instance MonadIO m => MonadIO (MaybeT m) where
-  liftIO = lift . liftIO
+-- instance MonadIO m => MonadIO (MaybeT m) where
+--   liftIO = lift . Control.Monad.IO.Class.liftIO
 
 mapMaybeT :: (m (Maybe a) -> n (Maybe b)) -> MaybeT m a -> MaybeT n b
 mapMaybeT f = MaybeT . f . runMaybeT

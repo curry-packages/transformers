@@ -8,28 +8,28 @@ newtype ExceptT e m a = ExceptT {
     runExceptT :: m (Either e a)
   }
 
-instance Monad m => Functor (ExceptT e m) where
+instance Functor m => Functor (ExceptT e m) where
   fmap f = ExceptT . fmap (either Left (Right . f)) . runExceptT
 
-instance Monad m => Applicative (ExceptT e m) where
-  pure a = ExceptT $ return (Right a)
-  ExceptT f <*> ExceptT v = ExceptT $ do
-      mf <- f
-      case mf of
-          Left e -> return (Left e)
-          Right k -> do
-              mv <- v
-              case mv of
-                  Left e -> return (Left e)
-                  Right x -> return (Right (k x))
+-- instance Monad m => Applicative (ExceptT e m) where
+--   pure a = ExceptT $ return (Right a)
+--   ExceptT f <*> ExceptT v = ExceptT $ do
+--       mf <- f
+--       case mf of
+--           Left e -> return (Left e)
+--           Right k -> do
+--               mv <- v
+--               case mv of
+--                   Left e -> return (Left e)
+--                   Right x -> return (Right (k x))
 
-instance (Monad m, Monoid e) => Alternative (ExceptT e m) where
-  empty = ExceptT $ return (Left mempty)
-  ExceptT mx <|> ExceptT my = ExceptT $ do
-      ex <- mx
-      case ex of
-          Left e -> fmap (either (Left . mappend e) Right) my
-          Right x -> return (Right x)
+-- instance (Monad m, Monoid e) => Alternative (ExceptT e m) where
+--   empty = ExceptT $ return (Left mempty)
+--   ExceptT mx <|> ExceptT my = ExceptT $ do
+--       ex <- mx
+--       case ex of
+--           Left e -> fmap (either (Left . mappend e) Right) my
+--           Right x -> return (Right x)
 
 instance (Monad m) => Monad (ExceptT e m) where
   return a = ExceptT $ return (Right a)
@@ -40,21 +40,21 @@ instance (Monad m) => Monad (ExceptT e m) where
           Left e -> return (Left e)
           Right x -> runExceptT (k x)
 
-instance MonadFail m => MonadFail (ExceptT e m) where
-  fail = ExceptT . fail
+-- instance MonadFail m => MonadFail (ExceptT e m) where
+--   fail = ExceptT . fail
 
-instance MonadTrans (ExceptT e) where
-  lift m = ExceptT (fmap Right m)
+-- instance MonadTrans (ExceptT e) where
+--   lift m = ExceptT (fmap Right m)
 
-instance MonadIO m => MonadIO (ExceptT e m) where
-  liftIO = lift . liftIO
+-- instance MonadIO m => MonadIO (ExceptT e m) where
+--   liftIO = lift . liftIO
 
 mapExceptT :: (m (Either e a) -> n (Either e' b))
         -> ExceptT e m a
         -> ExceptT e' n b
 mapExceptT f m = ExceptT $ f (runExceptT m)
 
-withExceptT :: (Monad m) => (e -> e') -> ExceptT e m a -> ExceptT e' m a
+withExceptT :: Functor m => (e -> e') -> ExceptT e m a -> ExceptT e' m a
 withExceptT f = mapExceptT $ fmap $ either (Left . f) Right
 
 type Except e = ExceptT e Identity

@@ -18,24 +18,24 @@ withContT f m = ContT $ runContT m . f
 instance Functor (ContT r m) where
   fmap f m = ContT $ \ c -> runContT m (c . f)
 
-instance Applicative (ContT r m) where
-  pure x  = ContT ($ x)
-
-  f <*> v = ContT $ \ c -> runContT f $ \ g -> runContT v (c . g)
+-- instance Applicative (ContT r m) where
+--   pure x  = ContT ($ x)
+-- 
+--   f <*> v = ContT $ \ c -> runContT f $ \ g -> runContT v (c . g)
 
 instance Monad (ContT r m) where
   return x = ContT ($ x)
 
   m >>= k  = ContT $ \ c -> runContT m (\ x -> runContT (k x) c)
 
-instance MonadFail m => MonadFail (ContT r m) where
-  fail msg = ContT $ \ _ -> fail msg
+-- instance MonadFail m => MonadFail (ContT r m) where
+--   fail msg = ContT $ \ _ -> fail msg
 
 instance MonadTrans (ContT r) where
   lift m = ContT (m >>=)
 
 instance (MonadIO m) => MonadIO (ContT r m) where
-  liftIO = lift . liftIO
+  liftIO = lift . Control.Monad.IO.Class.liftIO
 
 resetT :: Monad m => ContT r m r -> ContT r' m r
 resetT = lift . evalContT
