@@ -60,7 +60,7 @@ withStateT :: Monad m => (s -> s) -> StateT s m a -> StateT s m a
 withStateT f m = StateT $ \ s -> do (v, s') <- runStateT m s
                                     return (v, f s')
 
-type State s a = StateT s Identity a
+type State s = StateT s Identity
 
 runState :: State s a -> s -> (a, s)
 runState m = runIdentity . runStateT m
