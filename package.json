@@ -18,7 +18,7 @@
      "Control.Monad.IO.Class",
      "Control.Monad.Trans.Class",
      "Control.Monad.Trans.Cont",
-     "Control.Monad.Trans.Exept",
+     "Control.Monad.Trans.Except",
      "Control.Monad.Trans.Maybe",
      "Control.Monad.Trans.State" ],
   "source": {
