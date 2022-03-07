@@ -1,6 +1,6 @@
 module Control.Monad.Trans.Reader where
 
-import Data.Functor.Identity     ( Identity )
+import Data.Functor.Identity     ( Identity (..) )
 import Control.Monad.IO.Class    ( MonadIO (..) )
 import Control.Monad.Trans.Class ( MonadTrans (..) )
 
@@ -24,4 +24,20 @@ instance MonadTrans (ReaderT r) where
 instance MonadIO m => MonadIO (ReaderT r m) where
   liftIO = lift . liftIO
 
+-- | Retrieves the environment.
+ask :: Monad m => ReaderT r m r
+ask = ReaderT pure
+
+-- | Retrieves the environment with a selector function applied to it.
+asks :: Monad m => (r -> a) -> ReaderT r m a
+asks f = f <$> ask
+
+-- | Runs a computation in a modified environment.
+withReaderT :: (s -> r) -> ReaderT r m a -> ReaderT s m a
+withReaderT f m = ReaderT $ \s -> runReaderT m (f s)
+
 type Reader r = ReaderT r Identity
+
+-- | Runs a computation in the reader monad (a specialization of runReaderT).
+runReader :: Reader r a -> r -> a
+runReader m = runIdentity . runReaderT m
