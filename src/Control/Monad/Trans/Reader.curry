@@ -13,6 +13,10 @@ instance Applicative m => Applicative (ReaderT r m) where
   pure = ReaderT . const . pure
   mf <*> m = ReaderT $ \r -> (runReaderT mf r) <*> (runReaderT m r)
 
+instance Alternative m => Alternative (ReaderT r m) where
+  empty = ReaderT $ const empty
+  x <|> y = ReaderT $ \r -> runReaderT x r <|> runReaderT y r
+
 instance Monad m => Monad (ReaderT r m) where
   return = pure
   m >>= f = ReaderT $ \r -> do x <- runReaderT m r
