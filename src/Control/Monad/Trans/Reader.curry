@@ -25,6 +25,9 @@ instance Monad m => Monad (ReaderT r m) where
 instance MonadTrans (ReaderT r) where
   lift = ReaderT . const
 
+instance MonadFail m => MonadFail (ReaderT r m) where
+  fail msg = lift (fail msg)
+
 instance MonadIO m => MonadIO (ReaderT r m) where
   liftIO = lift . liftIO
 

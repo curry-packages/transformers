@@ -26,6 +26,9 @@ instance (Alternative m, Monoid w) => Alternative (WriterT w m) where
 instance Monoid w => MonadTrans (WriterT w) where
   lift m = WriterT $ (\x -> (x, mempty)) <$> m
 
+instance (MonadFail m, Monoid w) => MonadFail (WriterT w m) where
+  fail msg = lift (fail msg)
+
 instance (MonadIO m, Monoid w) => MonadIO (WriterT w m) where
   liftIO = lift . liftIO
 
