@@ -36,6 +36,10 @@ ask = ReaderT pure
 asks :: Monad m => (r -> a) -> ReaderT r m a
 asks f = f <$> ask
 
+-- | Performs a computation in the reader monad (equivalent to asks).
+reader :: Monad m => (r -> a) -> ReaderT r m a
+reader = asks
+
 -- | Runs a computation in a modified environment.
 withReaderT :: (s -> r) -> ReaderT r m a -> ReaderT s m a
 withReaderT f m = ReaderT $ \s -> runReaderT m (f s)
