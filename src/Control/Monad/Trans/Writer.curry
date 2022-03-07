@@ -23,4 +23,10 @@ instance (Alternative m, Monoid w) => Alternative (WriterT w m) where
   empty = WriterT empty
   x <|> y = WriterT $ runWriterT x <|> runWriterT y
 
+instance Monoid w => MonadTrans (WriterT w) where
+  lift m = WriterT $ (\x -> (x, mempty)) <$> m
+
+instance (MonadIO m, Monoid w) => MonadIO (WriterT w m) where
+  liftIO = lift . liftIO
+
 type Writer w = WriterT w Identity
