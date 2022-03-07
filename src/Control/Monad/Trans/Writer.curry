@@ -1,6 +1,6 @@
 module Control.Monad.Trans.Writer where
 
-import Data.Functor.Identity     ( Identity (..) )
+import Data.Functor.Identity     ( Identity (..), runIdentity )
 import Control.Monad.IO.Class    ( MonadIO (..) )
 import Control.Monad.Trans.Class ( MonadTrans (..) )
 
@@ -32,4 +32,28 @@ instance (MonadFail m, Monoid w) => MonadFail (WriterT w m) where
 instance (MonadIO m, Monoid w) => MonadIO (WriterT w m) where
   liftIO = lift . liftIO
 
+-- | Constructs a writer computation.
+writer :: Monad m => (a, w) -> WriterT w m a
+writer = WriterT . return
+
+-- | Appends the given value.
+tell :: Monad m => w -> WriterT w m ()
+tell w = writer ((), w)
+
+-- | Performs a computation and yields its output as part of the value.
+listen :: Monad m => WriterT w m a -> WriterT w m (a, w)
+listen m = WriterT $ (\(x, w) -> ((x, w), w)) <$> runWriterT m
+
+-- | Extracts the output of a writer compuation.
+execWriterT :: Monad m => WriterT w m a -> m w
+execWriterT m = snd <$> runWriterT m
+
 type Writer w = WriterT w Identity
+
+-- | Runs a writer compuation.
+runWriter :: Writer w a -> (a, w)
+runWriter = runIdentity . runWriterT
+
+-- | Extracts the output of a writer compuation.
+execWriter :: Writer w a -> w
+execWriter = snd . runWriter

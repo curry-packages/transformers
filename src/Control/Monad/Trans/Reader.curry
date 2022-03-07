@@ -49,6 +49,6 @@ withReaderT f m = ReaderT $ \s -> runReaderT m (f s)
 
 type Reader r = ReaderT r Identity
 
--- | Runs a computation in the reader monad (a specialization of runReaderT).
+-- | Runs a computation in the reader monad.
 runReader :: Reader r a -> r -> a
 runReader m = runIdentity . runReaderT m
